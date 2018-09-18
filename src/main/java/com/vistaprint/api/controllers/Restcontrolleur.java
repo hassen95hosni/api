@@ -28,12 +28,13 @@ import com.rethinkdb.net.Cursor;
 import com.vistaprint.api.connectors.ConnectionDb;
 import com.vistaprint.api.dao.*;
 import com.vistaprint.api.model.*;
-
+import org.springframework.web.bind.annotation.CrossOrigin;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
 
 
 @Component("demoBeanA")
@@ -45,6 +46,7 @@ public class Restcontrolleur {
 	Userdao userdao;
 	InstructionDao instdao;
 	Userdao us;
+	UserClass user;
 	PingRes ping = new PingRes();
 
 @RequestMapping("/addinstruction")
@@ -72,24 +74,28 @@ public String addInstruction(@RequestBody String body   ) {
 	public String hello() {
 		return "hello to rest Controller";
 	}
+	@CrossOrigin(origins = "http://localhost:4200")
 	@GetMapping("/userAll")
-	public String getAllUser() {
+	public List<String> getAllUser() {
 		ConnectionDb c = new ConnectionDb();
 		  Connection conn = c.getConnection();
 		RethinkDB r = c.getR();
-		
+		List<String> list = new ArrayList<String>();
 		Cursor<Object> cursor=r.db("maintennance").table("user").run(conn);
 	String a ="";
 		for (Object user :cursor) {
+			
+			list.add(user.toString());
 			a=a+user.toString();
+
 		}
 		
-		return a;	
+		return list;	
 		
 		//return us.getAll();
 		
 	}
-	
+	@CrossOrigin(origins = "http://localhost:4200")
 	@PostMapping("/getpingbysender")
 	public String getpingBySender(@RequestBody String sender) throws UnsupportedEncodingException {
 		String k ="";
@@ -123,19 +129,38 @@ public String addInstruction(@RequestBody String body   ) {
 	
 	
 	
-	
-	@GetMapping("/greet")
-	public String greet() {
-		try {
-			
-			
+	@CrossOrigin(origins = "http://localhost:4200")
+	@PostMapping("/userbyname")
+	public String getUserByName(@RequestBody String username) throws UnsupportedEncodingException {
+		String k ="";
 		
-			return pingdao.getAll();
-	
-		}
-		catch (Exception e ) {
+		k=java.net.URLDecoder.decode(username, "UTF-8");
+		
+		 ObjectMapper obj = new ObjectMapper();
+		 try {
+			user = obj.readValue(k, UserClass.class);
+			ConnectionDb c = new ConnectionDb();
+			 Connection conn = c.getConnection();
+		   RethinkDB r = c.getR();
+		   Cursor<Object> cursor=r.db("maintennance").table("user").filter(row ->row.g("name").eq(user.getName())).run(conn);
+		   String a = "";
+		   for (Object t : cursor ) {
+			   a=a+t.toString();}
+			return a ;
+		} catch (JsonParseException e) {
+			// TODO Auto-generated catch block
 			return e.getMessage();
-			}
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			return e.getMessage();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			return e.getMessage();
+		}
+		
+			//return userdao.getUserByName(username);
+	
+		
 		}
 	
 	
