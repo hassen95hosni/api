@@ -49,26 +49,60 @@ public class Restcontrolleur {
 	UserClass user;
 	PingRes ping = new PingRes();
 
+	@CrossOrigin
 @RequestMapping("/addinstruction")
 public String addInstruction(@RequestBody String body   ) {
 	String k ="";
 	try{
 		k=java.net.URLDecoder.decode(body, "UTF-8");
-		k =instdao.addInstruction(k);
-	
-		
-		
-	return k;}
+		//k =instdao.addInstruction(k);	
+	//return k;
+}
 	catch(Exception e) {
-		return "error"+e.getMessage();
+		//return "error"+e.getMessage();
 				
 	}
+	try {
+		Instruction inst = new Instruction();
+		 ObjectMapper obj = new ObjectMapper();
+		 inst = obj.readValue(k, Instruction.class);
+				 
+				ConnectionDb c = new ConnectionDb();
+				  Connection conn = c.getConnection();
+				RethinkDB r = c.getR();
+				
+				Date d = new Date();
+				
+				String date =String.valueOf(d);
+				r.db("maintennance").table("instruction")
+				.insert(r.hashMap("sender", inst.getSender())
+				.with("add",inst.getAdd())
+				.with("date",date))
+				.run(conn);
+				inst.setDate(date);
+				return inst.toString();
+	}
+	catch (Exception e )
+	{System.out.println("errror"+e.getMessage());
+		return "false"+e.getMessage();
+	}
 }
-
+@CrossOrigin(origins = "http://localhost:4200")
 	@RequestMapping(value = "pingAll", method = RequestMethod.GET)
-	public String getAllPing() {
-		
-		return pingdao.getAll();
+	public List<String> getAllPing() {
+		List <String> ab = new ArrayList<String>();
+		ConnectionDb c = new ConnectionDb();
+	  Connection conn = c.getConnection();
+	RethinkDB r = c.getR();
+	
+	Cursor<Object> cursor=r.db("maintennance").table("ping").run(conn);
+String a ="";
+	for (Object ping :cursor) {
+		ab.add(ping.toString());
+		a=a+ping.toString();
+	}
+	return ab;
+		//return pingdao.getAll();
 	}
 	@GetMapping("/greeting")
 	public String hello() {
@@ -168,13 +202,27 @@ public String addInstruction(@RequestBody String body   ) {
 	//public String greet() {
 		// return "voila";
 	//}
+	@CrossOrigin(origins = "http://localhost:4200")
 	@RequestMapping(value = "/pingAlls")
 	public String getAllPings() {
-		List<PingRes> list = new ArrayList<>();
-		list.add(new PingRes());
-		return pingdao.getAll();
-		//return JSON.parse(list.toString()).toString();
-	//return "voila";
+		ConnectionDb c = new ConnectionDb();
+	  Connection conn = c.getConnection();
+	RethinkDB r = c.getR();
+	List<PingRes> t = new ArrayList<>();
+	Cursor<Object> cursor=r.db("maintennance").table("ping").changes().run(conn);
+String a ="";
+	for (Object ping :cursor) {
+		a=a+ping.toString();
+	}
+	try {
+		
+	
+	System.out.println("size of table " +t.size());
+	} catch (Exception e ) {
+		System.out.println("error is kadha"+e.getMessage());
+		//pingrep.findAll();
+	}
+	return a;	
 	}
 	
 	
