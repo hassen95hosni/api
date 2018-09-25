@@ -35,6 +35,19 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.converter.SimpleMessageConverter;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.annotation.SubscribeMapping;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Controller;
+
+import java.util.concurrent.atomic.AtomicLong;
+
+
 
 
 @Component("demoBeanA")
@@ -48,6 +61,53 @@ public class Restcontrolleur {
 	Userdao us;
 	UserClass user;
 	PingRes ping = new PingRes();
+	private static final String SENDING_URL = "/topic/server-broadcaster";
+    private static final String RECEIVING_URL = "/server-receiver";
+
+    private final SimpMessagingTemplate template;
+    private AtomicLong counter = new AtomicLong(0);
+
+    private String message = "";
+
+    
+    @Autowired
+	public Restcontrolleur(SimpMessagingTemplate template) {
+		super();
+		this.template = template;
+	}
+	
+	@SubscribeMapping(SENDING_URL)
+    public String onSubscribe() {
+        return "SUBSCRIBED : " + message;
+	}
+	//@GetMapping("/pinAllss")
+	@Scheduled(fixedRate = 1000)
+    public void sendMessage() {
+    	ConnectionDb c = new ConnectionDb();
+    		  Connection conn = c.getConnection();
+    		RethinkDB r = c.getR();
+    		List<PingRes> t = new ArrayList<>();
+    		Cursor<Object> cursor=r.db("maintennance").table("ping").changes().run(conn);
+    	String a ="";
+    		for (Object ping :cursor) {
+    			a=ping.toString();
+    	template.convertAndSend(SENDING_URL, buildNextMessage(a));		
+    		}
+        
+	}
+	private String buildNextMessage(String text) {
+        message = text;
+        System.out.println("Send message " + message);
+	
+			return message;
+	//	}
+		
+    }
+
+
+
+
+
 
 	@CrossOrigin
 @RequestMapping("/addinstruction")
