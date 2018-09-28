@@ -23,7 +23,15 @@ String id ;
 String name;
 String macs;
 String ipAddresse;
+String average;
 
+
+public String getAverage() {
+	return average;
+}
+public void setAverage(String average) {
+	this.average = average;
+}
 public String getIpAddresse() {
 	return ipAddresse;
 }

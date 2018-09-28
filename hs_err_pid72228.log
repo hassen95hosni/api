@@ -1,0 +1,44 @@
+#
+# There is insufficient memory for the Java Runtime Environment to continue.
+# Native memory allocation (malloc) failed to allocate 32744 bytes for ChunkPool::allocate
+# Possible reasons:
+#   The system is out of physical RAM or swap space
+#   The process is running with CompressedOops enabled, and the Java Heap may be blocking the growth of the native heap
+# Possible solutions:
+#   Reduce memory load on the system
+#   Increase physical memory or swap space
+#   Check if swap backing store is full
+#   Decrease Java heap size (-Xmx/-Xms)
+#   Decrease number of Java threads
+#   Decrease Java thread stack sizes (-Xss)
+#   Set larger code cache with -XX:ReservedCodeCacheSize=
+#   JVM is running with Zero Based Compressed Oops mode in which the Java heap is
+#     placed in the first 32GB address space. The Java Heap base address is the
+#     maximum limit for the native heap growth. Please use -XX:HeapBaseMinAddress
+#     to set the Java Heap base and to place the Java Heap above 32GB virtual address.
+# This output file may be truncated or incomplete.
+#
+#  Out of Memory Error (t:/workspace/open/src/hotspot/share/memory/arena.cpp:82), pid=72228, tid=50404
+#
+# JRE version: Java(TM) SE Runtime Environment (10.0.2+13) (build 10.0.2+13)
+# Java VM: Java HotSpot(TM) 64-Bit Server VM (10.0.2+13, mixed mode, tiered, compressed oops, g1 gc, windows-amd64)
+# Core dump will be written. Default location: C:\Users\Administrator\Desktop\hassen_hosni\spring\vistaprintapi\api\hs_err_pid72228.mdmp
+#
+
+---------------  S U M M A R Y ------------
+
+Command Line: com.vistaprint.api.ApiRethinkdbApplication
+
+Host: Intel(R) Xeon(R) CPU E5-2697 v3 @ 2.60GHz, 4 cores, 15G,  Windows Server 2008 R2 , 64 bit Build 7601 (6.1.7601.23796)
+Time: Fri Sep 28 14:18:06 2018 GMT Daylight Time elapsed time: 4982 seconds (0d 1h 23m 2s)
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x00000000292c7800):  VMThread "VM Thread" [stack: 0x000000002a800000,0x000000002a900000] [id=50404] _threads_hazard_ptr=0x000000003208fe60
+
+Stack: [0x000000002a800000,0x000000002a900000]
+[error occurred during error reporting (printing stack bounds), id 0xe0000001]
+
+
+[error occurred during error reporting (printing native stack), id 0xe0000001]
+

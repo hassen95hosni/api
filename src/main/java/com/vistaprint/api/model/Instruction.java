@@ -6,6 +6,22 @@ public class Instruction {
 	String sender ;
 	String add ;
 	String date;
+	String type;
+	String result;
+	
+	
+	public String getResult() {
+		return result;
+	}
+	public void setResult(String result) {
+		this.result = result;
+	}
+	public String getType() {
+		return type;
+	}
+	public void setType(String type) {
+		this.type = type;
+	}
 	public String getId() {
 		return id;
 	}
@@ -27,9 +43,12 @@ public class Instruction {
 	public Instruction() {
 		super();
 	}
+	
+	
 	@Override
 	public String toString() {
-		return "Instruction [id=" + id + ", sender=" + sender + ", add=" + add + ", date=" + date + "]";
+		return "Instruction [id=" + id + ", sender=" + sender + ", add=" + add + ", date=" + date + ", type=" + type
+				+ ", result=" + result + "]";
 	}
 	public String getDate() {
 		return date;

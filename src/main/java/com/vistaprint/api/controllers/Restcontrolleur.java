@@ -47,6 +47,8 @@ import org.springframework.stereotype.Controller;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import javax.validation.constraints.Null;
+
 
 
 
@@ -55,6 +57,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class Restcontrolleur {
 	//@Autowired
+	public String id ="";
 	Pingdao pingdao;
 	Userdao userdao;
 	InstructionDao instdao;
@@ -63,7 +66,8 @@ public class Restcontrolleur {
 	PingRes ping = new PingRes();
 	private static final String SENDING_URL = "/topic/server-broadcaster";
     private static final String RECEIVING_URL = "/server-receiver";
-
+    private static final String SENDING_URL2 = "/topic/server-broadcasters";
+    
     private final SimpMessagingTemplate template;
     private AtomicLong counter = new AtomicLong(0);
 
@@ -75,13 +79,17 @@ public class Restcontrolleur {
 		super();
 		this.template = template;
 	}
-	
+    @SubscribeMapping(SENDING_URL2)
+    public String onSubscribesocket() {
+        return "waiting for response " + message;
+	}
+    
 	@SubscribeMapping(SENDING_URL)
     public String onSubscribe() {
         return "SUBSCRIBED : " + message;
 	}
 	//@GetMapping("/pinAllss")
-	@Scheduled(fixedRate = 1000)
+	@Scheduled(fixedRate = 10000)
     public void sendMessage() {
     	ConnectionDb c = new ConnectionDb();
     		  Connection conn = c.getConnection();
@@ -95,6 +103,26 @@ public class Restcontrolleur {
     		}
         
 	}
+	
+	@Scheduled(fixedRate = 10000)
+    public void sendMessagetsocket() {
+    	ConnectionDb c = new ConnectionDb();
+    		  Connection conn = c.getConnection();
+    		RethinkDB r = c.getR();
+    		List<PingRes> t = new ArrayList<>();
+    		if(!this.id.isEmpty()) {
+    			Cursor<Object> cursor=r.db("maintennance").table("instruction").get(id).changes().run(conn);
+    	    	String a ="";
+    	    		for (Object ping :cursor) {
+    	    			a=ping.toString();
+    	    	template.convertAndSend(SENDING_URL2, buildNextMessage(a));		
+    	    		}	
+    		}
+    		
+        
+	}
+	
+	
 	private String buildNextMessage(String text) {
         message = text;
         System.out.println("Send message " + message);
@@ -134,18 +162,31 @@ public String addInstruction(@RequestBody String body   ) {
 				Date d = new Date();
 				
 				String date =String.valueOf(d);
-				r.db("maintennance").table("instruction")
+				Cursor<Object> object=r.db("maintennance").table("instruction")
 				.insert(r.hashMap("sender", inst.getSender())
 				.with("add",inst.getAdd())
-				.with("date",date))
+				.with("date",date)
+				.with("type",inst.getType())
+				.with("result",inst.getResult()))
 				.run(conn);
 				inst.setDate(date);
+				for(Object emp :object)
+				{	int firstletter= emp.toString().indexOf("id=");
+					int lastletter=emp.toString().indexOf(",",firstletter);
+					 id = emp.toString().substring(firstletter+3,lastletter);
+					//sendMessagetsocket();
+				};
+				// 
+				//
 				return inst.toString();
 	}
 	catch (Exception e )
 	{System.out.println("errror"+e.getMessage());
 		return "false"+e.getMessage();
 	}
+	
+	
+	
 }
 @CrossOrigin(origins = "http://localhost:4200")
 	@RequestMapping(value = "pingAll", method = RequestMethod.GET)
@@ -170,19 +211,24 @@ String a ="";
 	}
 	@CrossOrigin(origins = "http://localhost:4200")
 	@GetMapping("/userAll")
-	public List<String> getAllUser() {
+	public List<String> getAllUser() throws JsonParseException, JsonMappingException, IOException {
 		ConnectionDb c = new ConnectionDb();
 		  Connection conn = c.getConnection();
 		RethinkDB r = c.getR();
 		List<String> list = new ArrayList<String>();
 		Cursor<Object> cursor=r.db("maintennance").table("user").run(conn);
 	String a ="";
+	ObjectMapper obj = new ObjectMapper();
 		for (Object user :cursor) {
 			
-			list.add(user.toString());
+			 
+				 UserClass uc ;
+			uc = obj.readValue(user.toString(), UserClass.class);
+			uc.setAverage(pingaveragebysender(uc.toString()));
+			list.add(uc.toString());
 			a=a+user.toString();
 
-		}
+		}	
 		
 		return list;	
 		
@@ -284,6 +330,44 @@ String a ="";
 	}
 	return a;	
 	}
-	
+	public String pingaveragebysender(String sender) throws UnsupportedEncodingException {
+		String k ="";
+		
+		k=java.net.URLDecoder.decode(sender, "UTF-8");
+		
+		 ObjectMapper obj = new ObjectMapper();
+		 try {
+			 PingRes p ;
+			ping = obj.readValue(k, PingRes.class);
+			ConnectionDb c = new ConnectionDb();
+			  Connection conn = c.getConnection();
+			RethinkDB r = c.getR();
+			Cursor<Object> cursor=r.db("maintennance").table("ping").filter(row ->row.g("sender").eq(ping.getSender())).run(conn);
+			String a = "";
+			float avg = 0;
+			for (Object t : cursor ) {
+				p=obj.readValue(t.toString(), PingRes.class);
+				
+				avg=avg+p.getAverage();
+				
+				
+			}
+			a=String.valueOf(avg);
+			return a;
+		} catch (JsonParseException e) {
+			// TODO Auto-generated catch block
+			return e.getMessage();
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			return e.getMessage();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			return e.getMessage();
+		}
+		
+		
+		
+		
+	}
 	
 }
