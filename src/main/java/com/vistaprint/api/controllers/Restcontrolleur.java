@@ -3,7 +3,7 @@ package com.vistaprint.api.controllers;
 
 
 import org.apache.tomcat.util.http.parser.MediaType;
-
+import org.json.simple.parser.JSONParser;
 import org.mortbay.util.ajax.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -220,12 +220,11 @@ String a ="";
 	String a ="";
 	ObjectMapper obj = new ObjectMapper();
 		for (Object user :cursor) {
-			
-			 
+			// Object vr = JSON.parse(user.toString());
 				 UserClass uc ;
-			uc = obj.readValue(user.toString(), UserClass.class);
-			uc.setAverage(pingaveragebysender(uc.toString()));
-			list.add(uc.toString());
+			//uc = obj.readValue(vr.toString(), UserClass.class);
+			//uc.setAverage(pingaveragebysender(uc.toString()));
+			list.add(user.toString());
 			a=a+user.toString();
 
 		}	
@@ -369,5 +368,46 @@ String a ="";
 		
 		
 	}
+	
+	
+	
+	@CrossOrigin(origins = "http://localhost:4200")
+	@PostMapping("/updateUser")
+	public String updateUser(@RequestBody String username) throws UnsupportedEncodingException {
+		String k ="";
+		
+		k=java.net.URLDecoder.decode(username, "UTF-8");
+		
+		 ObjectMapper obj = new ObjectMapper();
+		 try {
+			user = obj.readValue(k, UserClass.class);
+			ConnectionDb c = new ConnectionDb();
+			 Connection conn = c.getConnection();
+		   RethinkDB r = c.getR();
+		   Cursor<Object> cursor=r.db("maintennance").table("user").get(user.getId()).update(r.hashMap("initialaddresse",user.getInitialaddresse())).run(conn);
+		   String a = "";
+		   for (Object t : cursor ) {
+			   a=a+t.toString();}
+			return a ;
+		} catch (JsonParseException e) {
+			// TODO Auto-generated catch block
+			return e.getMessage();
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			return e.getMessage();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			return e.getMessage();
+		}
+		
+			//return userdao.getUserByName(username);
+	
+		
+		}
+	
+	
+	
+	
+	
 	
 }

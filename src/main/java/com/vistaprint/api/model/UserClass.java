@@ -24,8 +24,16 @@ String name;
 String macs;
 String ipAddresse;
 String average;
+String initialaddresse ;
 
 
+
+public String getInitialaddresse() {
+	return initialaddresse;
+}
+public void setInitialaddresse(String initialaddresse) {
+	this.initialaddresse = initialaddresse;
+}
 public String getAverage() {
 	return average;
 }
@@ -66,9 +74,11 @@ public UserClass(String id, String name, String macs, String ipAddresse) {
 	this.macs = macs;
 	this.ipAddresse = ipAddresse;
 }
+
 @Override
 public String toString() {
-	return  ""+macs+"" ;
+	return "UserClass [id=" + id + ", name=" + name + ", macs=" + macs + ", ipAddresse=" + ipAddresse + ", average="
+			+ average + "]";
 }
 public Object adduser(Connection connection , RethinkDB database , UserClass user) {
 	//List<String> list = user.getMacs();
