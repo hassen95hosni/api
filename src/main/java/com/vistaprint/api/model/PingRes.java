@@ -12,12 +12,20 @@ public class PingRes {
 	float average;
 	int loss;
 	String type;
-	String sender;
+	String name;
+	String sender ;
+	
 	public String getSender() {
 		return sender;
 	}
 	public void setSender(String sender) {
 		this.sender = sender;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
 	}
 	public Long getId() {
 		return id;
@@ -49,7 +57,7 @@ public class PingRes {
 	public void setType(String type) {
 		this.type = type;
 	}
-	public PingRes(Long id, UserClass user, float average, int loss, String type) {
+	public PingRes(Long id, UserClass user, float average, int loss, String type,String name) {
 		super();
 		this.id = id;
 		this.user = user;
@@ -75,7 +83,7 @@ public PingRes() {
 	}
 public PingRes toping(String pingres,UserClass user){
 System.out.println(pingres);
-PingRes ping = new PingRes(id, user, average, loss, type);
+PingRes ping = new PingRes(Long.valueOf(1), user, 2, 3,"","");
 int a = pingres.indexOf("(");
 int b = pingres.indexOf(")");
 

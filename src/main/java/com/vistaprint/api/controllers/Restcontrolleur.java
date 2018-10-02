@@ -28,6 +28,9 @@ import com.rethinkdb.net.Cursor;
 import com.vistaprint.api.connectors.ConnectionDb;
 import com.vistaprint.api.dao.*;
 import com.vistaprint.api.model.*;
+
+import ch.qos.logback.core.net.SyslogOutputStream;
+
 import org.springframework.web.bind.annotation.CrossOrigin;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -188,7 +191,7 @@ public String addInstruction(@RequestBody String body   ) {
 	
 	
 }
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin
 	@RequestMapping(value = "pingAll", method = RequestMethod.GET)
 	public List<String> getAllPing() {
 		List <String> ab = new ArrayList<String>();
@@ -196,7 +199,7 @@ public String addInstruction(@RequestBody String body   ) {
 	  Connection conn = c.getConnection();
 	RethinkDB r = c.getR();
 	
-	Cursor<Object> cursor=r.db("maintennance").table("ping").run(conn);
+	Cursor<Object> cursor=r.db("maintennance").table("ping").limit(20).run(conn);
 String a ="";
 	for (Object ping :cursor) {
 		ab.add(ping.toString());
@@ -209,7 +212,7 @@ String a ="";
 	public String hello() {
 		return "hello to rest Controller";
 	}
-	@CrossOrigin(origins = "http://localhost:4200")
+	@CrossOrigin
 	@GetMapping("/userAll")
 	public List<String> getAllUser() throws JsonParseException, JsonMappingException, IOException {
 		ConnectionDb c = new ConnectionDb();
@@ -234,41 +237,31 @@ String a ="";
 		//return us.getAll();
 		
 	}
-	@CrossOrigin(origins = "http://localhost:4200")
+	@CrossOrigin
 	@PostMapping("/getpingbysender")
-	public String getpingBySender(@RequestBody String sender) throws UnsupportedEncodingException {
-		String k ="";
-		
-			k=java.net.URLDecoder.decode(sender, "UTF-8");
-			
-			 ObjectMapper obj = new ObjectMapper();
-			 try {
-				ping = obj.readValue(k, PingRes.class);
-				ConnectionDb c = new ConnectionDb();
-				  Connection conn = c.getConnection();
-				RethinkDB r = c.getR();
-				Cursor<Object> cursor=r.db("maintennance").table("ping").filter(row ->row.g("sender").eq(ping.getSender())).run(conn);
-				String a = "";
-				for (Object t : cursor ) {
-					a=a+t.toString();
-				}
-				return a ;
-			} catch (JsonParseException e) {
-				// TODO Auto-generated catch block
-				return e.getMessage();
-			} catch (JsonMappingException e) {
-				// TODO Auto-generated catch block
-				return e.getMessage();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				return e.getMessage();
+	public List<String> getpingBySender(@RequestBody String sender) throws UnsupportedEncodingException, JsonParseException, JsonMappingException, IOException {
+		//String k ="";
+		 System.out.println(sender);
+			//ping = obj.readValue(k, PingRes.class);
+		 List <String> ab = new ArrayList<String>();
+			System.out.println(ping);
+			ConnectionDb c = new ConnectionDb();
+			  Connection conn = c.getConnection();
+			RethinkDB r = c.getR();
+			Cursor<Object> cursor=r.db("maintennance").table("ping").filter(row ->row.g("user").eq(sender)).limit(20).run(conn);
+			String a = "";
+			for (Object t : cursor ) {
+						System.out.println(a);
+				a=a+t.toString();
+				ab.add(t.toString());
 			}
+			return ab ;
 			
 	}
 	
 	
 	
-	@CrossOrigin(origins = "http://localhost:4200")
+	@CrossOrigin
 	@PostMapping("/userbyname")
 	public String getUserByName(@RequestBody String username) throws UnsupportedEncodingException {
 		String k ="";
@@ -307,7 +300,7 @@ String a ="";
 	//public String greet() {
 		// return "voila";
 	//}
-	@CrossOrigin(origins = "http://localhost:4200")
+	@CrossOrigin
 	@RequestMapping(value = "/pingAlls")
 	public String getAllPings() {
 		ConnectionDb c = new ConnectionDb();
@@ -341,7 +334,7 @@ String a ="";
 			ConnectionDb c = new ConnectionDb();
 			  Connection conn = c.getConnection();
 			RethinkDB r = c.getR();
-			Cursor<Object> cursor=r.db("maintennance").table("ping").filter(row ->row.g("sender").eq(ping.getSender())).run(conn);
+			Cursor<Object> cursor=r.db("maintennance").table("ping").filter(row ->row.g("sender").eq(ping.getName())).limit(10).run(conn);
 			String a = "";
 			float avg = 0;
 			for (Object t : cursor ) {
@@ -371,7 +364,7 @@ String a ="";
 	
 	
 	
-	@CrossOrigin(origins = "http://localhost:4200")
+	@CrossOrigin
 	@PostMapping("/updateUser")
 	public String updateUser(@RequestBody String username) throws UnsupportedEncodingException {
 		String k ="";
